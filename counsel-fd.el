@@ -39,7 +39,7 @@
 If non-nil, append EXTRA-fd-ARGS to BASE-CMD."
   (or (counsel-more-chars)
       (let ((default-directory counsel-fd-current-dir)
-            (regex (counsel-unquote-regex-parens
+            (regex (counsel--elisp-to-pcre
                     (setq ivy--old-re
                           (ivy--regex-plus string)))))
         (let* ((fd-cmd (concat (format base-cmd) (concat " " (s-wrap regex "'")))))
@@ -60,16 +60,14 @@ FD-PROMPT, if non-nil, is passed as `ivy-read' prompt argument."
                                  (car (split-string counsel-fd-base-command))
                                  " in directory: ")))))
   (counsel-require-program (car (split-string counsel-fd-base-command)))
-  (ivy-set-prompt 'counsel-fd counsel-prompt-function)
   (setq counsel-fd-current-dir (or initial-directory default-directory))
-  (ivy-read (or fd-prompt (car (split-string counsel-fd-base-command)))
+  (ivy-read "fd: "
             (lambda (string)
               (counsel-fd-function string (concat counsel-fd-base-command " " (or fd-args " "))))
             :initial-input initial-input
             :dynamic-collection t
-            ;; :keymap counsel-ag-map
             :history #'counsel-git-grep-history
-            :action #'counsel-find-file-action
+            :action #'find-file
             :unwind (lambda ()
                       (counsel-delete-process)
                       (swiper--cleanup))
